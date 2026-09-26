@@ -2,7 +2,7 @@
 title: 'Story 2.1: The triage agent'
 type: 'feature'
 created: '2026-09-26'
-status: 'ready-for-dev'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 context: ['{project-root}/TRIAGE_POLICY.md', '{project-root}/_bmad-output/specs/spec-epic-2/SPEC.md', '{project-root}/triage_schema.py']
