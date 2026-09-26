@@ -117,48 +117,47 @@ async def triage(ticket_id: str) -> dict[str, Any]:
         }
     )
 
-    async with client:
-        tools = await client.get_tools()
+    tools = await client.get_tools()
 
-        model = _build_model()
-        system_prompt = _build_prompt()
+    model = _build_model()
+    system_prompt = _build_prompt()
 
-        agent = create_agent(
-            model=model,
-            tools=tools,
-            system_prompt=system_prompt,
-            response_format=TriageDecision,
-            config={"recursion_limit": 10},
-        )
+    agent = create_agent(
+        model=model,
+        tools=tools,
+        system_prompt=system_prompt,
+        response_format=TriageDecision,
+    )
 
-        # Try to run the agent, with one retry on validation failure
-        last_error = None
-        for attempt in range(2):
-            try:
-                result = await agent.ainvoke(
-                    {"input": f"Triage ticket {ticket_id}"}
-                )
+    # Try to run the agent, with one retry on validation failure
+    last_error = None
+    for attempt in range(2):
+        try:
+            result = await agent.ainvoke(
+                {"input": f"Triage ticket {ticket_id}"},
+                config={"recursion_limit": 10},
+            )
 
-                # Extract and validate the structured response
-                return _extract_decision(result)
+            # Extract and validate the structured response
+            return _extract_decision(result)
 
-            except (ValidationError, ValueError) as e:
-                last_error = e
-                if attempt == 0:
-                    # First failure, retry
-                    continue
+        except (ValidationError, ValueError) as e:
+            last_error = e
+            if attempt == 0:
+                # First failure, retry
+                continue
+            else:
+                # Second failure, raise with context
+                if isinstance(e, ValidationError):
+                    # Extract the field name from the validation error
+                    field_name = None
+                    if e.errors():
+                        field_name = e.errors()[0].get("loc", (None,))[0]
+                    raise ValueError(
+                        f"Structured output validation failed twice "
+                        f"on field '{field_name}': {e}"
+                    ) from e
                 else:
-                    # Second failure, raise with context
-                    if isinstance(e, ValidationError):
-                        # Extract the field name from the validation error
-                        field_name = None
-                        if e.errors():
-                            field_name = e.errors()[0].get("loc", (None,))[0]
-                        raise ValueError(
-                            f"Structured output validation failed twice "
-                            f"on field '{field_name}': {e}"
-                        ) from e
-                    else:
-                        raise ValueError(
-                            f"Structured output validation failed twice: {e}"
-                        ) from e
+                    raise ValueError(
+                        f"Structured output validation failed twice: {e}"
+                    ) from e
