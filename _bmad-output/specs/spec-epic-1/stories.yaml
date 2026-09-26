@@ -1,0 +1,13 @@
+- id: "1"
+  title: Triage-decision schema
+  description: >-
+    Build the triage-decision schema (CAP-1): accept the listed categories,
+    priorities and routes plus a one-sentence rationale, and reject anything
+    else with an error that names what is wrong.
+  done_checkpoint: true
+- id: "2"
+  title: Seed loader
+  description: >-
+    Build load_seed.py (CAP-2, CAP-3): load seed/tickets.csv and
+    seed/customers.csv into app.db with the table and column names
+    mcp/triage_server.py reads, repeatable with no duplicate rows.
