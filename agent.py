@@ -134,7 +134,7 @@ async def triage(ticket_id: str) -> dict[str, Any]:
     for attempt in range(2):
         try:
             result = await agent.ainvoke(
-                {"input": f"Triage ticket {ticket_id}"},
+                {"messages": [{"role": "user", "content": f"Triage ticket {ticket_id}"}]},
                 config={"recursion_limit": 10},
             )
 
